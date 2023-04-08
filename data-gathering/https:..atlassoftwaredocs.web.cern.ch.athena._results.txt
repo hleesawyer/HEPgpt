@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS and icons-->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+
+  <link rel="stylesheet" href="/css/asd.css" type="text/css" />
+
+  <meta property="og:site_name" content="ATLAS Software Documentation">
+  
+  <meta name="description" content="ATLAS Athena Guide">
+  <meta property="og:title" content="ATLAS Athena Guide">
+  <meta property="og:type" content="article">
+  <meta property="og:description" content="ATLAS Athena Guide"/>
+  
+  
+  
+
+  <title>ATLAS Athena Guide | ATLAS Athena Guide</title>
+  <base href="/athena/">
+</head>
+<body>
+  <!-- Our standard top bar -->
+  <script>
+  // Add our own site to the search query
+  function search_add_site() {
+    var f = document.getElementById("Search");
+    f.q.value = f.q.value + " site:atlassoftwaredocs.web.cern.ch";
+    return true;
+  }
+</script>
+
+<nav class="navbar navbar-expand-md navbar-dark fixed-top">
+  <div class="container-fluid">
+    <button class="navbar-toggler sidebar-toggler" type="button" data-bs-toggle="sidebar-show" id="menu-toggle">
+      <span>
+        <i class="bi bi-chevron-double-right"></i>
+      </span>
+    </button>
+    <!-- Button appears when view becomes too small and navbar collapses -->
+    <button class="navbar-toggler ml-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarResponsive">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link active" href="">ATLAS Software Documentation</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuGuides" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Guides <span class="caret"></span>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuGuides">
+            <a class="dropdown-item" href="/athena/">Athena Developers</a>
+            <a class="dropdown-item" href="/guides/ca_configuration/">Athena Configuration</a>
+            <a class="dropdown-item" href="/guides/trigger/">Trigger Developers</a>
+            <a class="dropdown-item" href="/guides/cmake/">CMake Configuration</a>
+            <a class="dropdown-item" href="/guides/release_coordinators/">Release Coordinators</a>
+            <a class="dropdown-item" href="/guides/MR_reviewers/">Merge Request Review Shifters</a>
+            <a class="dropdown-item" href="/guides/build_release/">Building a release</a>
+            <a class="dropdown-item" href="/AnalysisTools/">Analysis Tools</a>
+            <a class="dropdown-item" href="/guides/ftag/">FTag Guide</a>
+            <a class="dropdown-item" href="/guides/vscode/">VS Code Usage</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuTutorials" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Tutorials <span class="caret"></span>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuTutorials">
+            <a class="dropdown-item" href="/gittutorial/">Git Workflow Tutorial</a>
+            <a class="dropdown-item" href="/MRtutorial/">Merge Review Shift Tutorial</a>
+            <a class="dropdown-item" href="/tutorials/configuration/">Athena Configuration Tutorial</a>
+            <a class="dropdown-item" href="/trackingTutorial/">Tracking Software Tutorial</a>
+            <a class="dropdown-item" href="/gridtutorial/">Grid Tutorial</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuASWT" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Analysis SW Tutorial <span class="caret"></span>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuASWT">
+            <a class="dropdown-item" href="/ASWTutorial/">Start Page</a>
+            <a class="dropdown-item" href="/ASWTutorial/TutorialWeek/">Tutorial Material</a>
+            <a class="dropdown-item" href="/AnalysisSWTutorial/">Exercises</a>
+            <a class="dropdown-item" href="/ASWTutorial/TutorialWeekOld/">Previous Tutorial Material</a>
+            <a class="dropdown-item" href="/ABtutorial/">Previous Exercises</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLinks" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Links <span class="caret"></span>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLinks">
+            <a class="dropdown-item" href="https://twiki.cern.ch/twiki/bin/viewauth/AtlasComputing/AtlasComputing">Computing Twiki [Internal]</a>
+            <a class="dropdown-item" href="https://atlasop.cern.ch/otp/SCList.php">OTP S&C Shift Crew</a>
+            <a class="dropdown-item" href="https://gitlab.cern.ch/atlas-sw-git/atlassoftwaredocs#how-to-contribute">Contribution Guide</a>
+          </div>
+        </li>
+      </ul>
+      <form class="d-flex" id="Search" action="https://duckduckgo.com" method="get" onsubmit="search_add_site()">
+        <input class="form-control me-sm-2" type="text" name="q" size="25" placeholder="Search atlassoftwaredocs..." aria-label="Search">
+      </form>
+    </div>
+  </div>
+</nav>
+
+
+
+
+
+<div id="wrapper">
+<div class="container">
+
+  <div>
+    <h1>ATLAS Athena Guide</h1>
+    <i>Last update: 24 Apr 2017 <a href="https://gitlab.cern.ch/atlas-sw-git/atlassoftwaredocs/commits/master/athena/index.md">[History]</a> <a href="https://gitlab.cern.ch/atlas-sw-git/atlassoftwaredocs/edit/master/athena/index.md">[Edit]</a></i><p>
+  </div>
+
+  <div class="row">
+
+    <div class="col-lg-8">
+      <p>Athena is the name of the ATLAS software framework
+that manages almost all ATLAS production workflows:
+event generation, simulation, reconstruction and
+derivation production. Athena is also used online
+in the ATLAS High Level Trigger.</p>
+
+<p>This guide gives some useful practical information
+about working with the framework and how to develop
+new code.</p>
+
+<p><em>Nota Bene</em> this guide covers development, builds and
+deployment for modern Athena releases (21 and later) where the
+code is managed in <a href="../gittutorial">git</a>
+and built using
+<a href="https://twiki.cern.ch/twiki/bin/view/AtlasComputing/CMakeTestProjectInstructions">CMake</a>.</p>
+
+      <hr>
+<footer id="sticky-footer" class="py-4">
+  <div class="container">
+    <br><br><br><!--hacky-->
+    <p>Authored by ATLAS Software Project. Report any issues <a href="https://gitlab.cern.ch/atlas-sw-git/atlassoftwaredocs/issues">here</a>.
+    </p>
+    <p>Built with <a href="http://jekyllrb.com/">Jekyll</a> and
+    <a href="http://getbootstrap.com/">Bootstrap</a>. Thanks to the
+    <a href="http://hepsoftwarefoundation.org/">HEP Software Foundation</a> for
+    layout ideas.</p> 
+  </div>
+</footer>
+
+
+    </div>
+
+    <div class="col-lg-3">
+      
+
+        <div id="sidebar-wrapper">
+
+      <nav id="RightSideBar" class="nav-sidebar ">
+            <ul id="Menu" class="list-group list-group-flush" role="tablist">
+              <li><strong><a href="">ATLAS Athena Guide <img src="/images/link.png" alt="[link]"></a></strong></li>
+              <li><br><strong>Basics</strong></li>
+              <li ><a href="athena-intro" class="list-group-item" data-parent="#Menu">Introduction to Athena</a></li>
+              <li ><a href="athena-releases" class="list-group-item" data-parent="#Menu">Athena Releases</a></li>
+              <li ><a href="git-branch-structure-r21" class="list-group-item" data-parent="#Menu">Release 21 Branch Structure<br>(loads slowly)</a></li>
+              <li><strong>Development</strong></li>
+              <li ><a href="athena-developers" class="list-group-item" data-parent="#Menu">Introduction</a></li>
+              <li ><a href="athena-nightly-builds" class="list-group-item" data-parent="#Menu">Athena Nightly Builds</a></li>
+              <li><strong>Containers</strong></li>
+              <li ><a href="intro-docker" class="list-group-item" data-parent="#Menu">Introduction</a></li>
+              <li ><a href="mac-setup" class="list-group-item" data-parent="#Menu">Mac Docker Setup</a></li>
+              <li ><a href="ubuntu-setup" class="list-group-item" data-parent="#Menu">Ubuntu Docker Setup</a></li>
+              <li ><a href="dev-setup" class="list-group-item" data-parent="#Menu">Athena for Developers and other Commands</a></li>
+              <li><strong><a href="mailto:hn-atlas-offlineswhelp@cern.ch">Offline software help <img src="/images/link.png" alt="[link]"></a></strong></li>
+              <li><strong><a href="mailto:atlas-sw-git@cern.ch">Feedback <img src="/images/link.png" alt="[link]"></a></strong></li>
+          </ul>
+      </nav>
+    </div>
+    </div>
+
+  </div><!-- row -->
+</div> <!-- container -->
+</div> <!-- Wrapper -->
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@1/dist/clipboard.min.js"></script>
+
+
+<script>
+// auto link anchors
+$(function() {
+  return $("h2, h3, h4, h5, h6").each(function(i, el) {
+    var $el, icon, id;
+    $el = $(el);
+    id = $el.attr('id');
+    icon = '<i class="bi bi-link-45deg"></i>';
+    if (id) {
+      var path = window.location.pathname;
+      var page = path;
+      return $el.append($("<a />").addClass("header-link").attr("href", page + '#' + id).html(icon));
+    }
+  });
+});
+</script>
+
+<script>
+// Menu-toggle
+$("#menu-toggle").click(function(e) {
+    e.preventDefault();
+    $("#wrapper").toggleClass("active");
+});
+// Hide sidebar button if sidebar is empty
+$(document).ready(function() { 
+  if ( !$("#sidebar-wrapper").html() ){
+    $('#menu-toggle').hide();
+  } 
+});
+</script>
+
+</body>
+
+</html>

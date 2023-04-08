@@ -1,0 +1,7 @@
+We can use the nim robots parser package at:
+ https://github.com/achesak/nim-robotparser
+
+to parse any robots.txt files we want to scrape (such as atlas.cern) and get all the information we need to scrape
+
+Documentation on how robots.txt is structured:
+ http://www.robotstxt.org/robotstxt.html
