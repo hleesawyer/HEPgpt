@@ -161,24 +161,30 @@ if isMainModule:
         for idx, url in urlList:
             echo "url in for loop:" & url
             echo "idx in for loop:" & $idx
-            try:
-                var
-                    data = return_request(url, idx)
-                    parsed_data = parse_request(data)
+            
+
+            # If the current url in the loop matches the idu-th url we have iterated through in the list(the last one we did)
+            if idu == idx:
                 try:
-                    # How many urls have we found that need to be added to the file?
-                    echo "record_urls"
-                    num_urls_to_add = record_urls(parsed_data)
-                    echo "recorded"
-                    # Add that number of iterations to our main loop
-                    url_iter += num_urls_to_add
-                    echo "url_iter updated:" & $url_iter
-                except Exception:
-                    echo "failed to record_urls"
+                    echo "MAKING REQUEST..."
+                    var
+                        data = return_request(url, idx)
+                        parsed_data = parse_request(data)
+                    echo "REQUEST COMPLETE."
+                    try:
+                        # How many urls have we found that need to be added to the file?
+                        echo "record_urls"
+                        num_urls_to_add = record_urls(parsed_data)
+                        echo "recorded"
+                        # Add that number of iterations to our main loop
+                        url_iter += num_urls_to_add
+                        echo "url_iter updated:" & $url_iter
+                    except Exception:
+                        echo "failed to record_urls"
+                        echo getCurrentExceptionMsg()
+                except:
+                    echo "Request failed with error:"
                     echo getCurrentExceptionMsg()
-            except:
-                echo "Request failed with error:"
-                echo getCurrentExceptionMsg()
 
             # try:
                 # Try to record the parsed data
