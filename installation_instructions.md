@@ -25,7 +25,7 @@ chmod 777 hepgpt_env_install.sh
 ##### 3. activate the envrionment (everytime you use nim or the project packages): "conda activate envname"
 conda activate hepgpt
 
-##### 4. Export all the necessary miniconda bin locations
+##### 4. Export all the necessary miniconda bin locations --actually, maybe don't do this. i broke my conda before b/c of path i think
 export PATH=/home/wrkn/miniconda3/envs/hepgpt/bin:$PATH
 export PATH=/home/wrkn/miniconda3/bin:$PATH
 
