@@ -163,8 +163,9 @@ if isMainModule:
             echo "idx in for loop:" & $idx
             
 
-            # If the current url in the loop matches the idu-th url we have iterated through in the list(the last one we did)
-            if idu == idx:
+            # If the current url in the loop idx has not been seen in idu url iterations in the urllist(the last one we did)
+            # then process the url.
+            if idu >= idx:
                 try:
                     echo "MAKING REQUEST..."
                     var
