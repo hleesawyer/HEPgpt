@@ -9,10 +9,6 @@ import std/random
 
 # import std/rdstdin
 
-# TODO
-# - process the html
-# - get all the data
-
 
 ### FOR ASYNC REQUESTS USE ###
 # Async is used when program speed is I/O bound rather than cpu bound
@@ -64,7 +60,6 @@ proc parse_request*(data: string): seq[string] =
     # return new_urls_string
     
 
-  # return a #parsed_data
 
 proc return_request*(request_url: string, idx: int): string = 
     # How to add documentation to proc?
@@ -79,7 +74,8 @@ proc return_request*(request_url: string, idx: int): string =
         d = client.request(request_url)
         data = d.body()
 
-    writeFile(&"/home/wrkn/GitRepos/HEPgpt/data-gathering/data/{request_url.replace('/','.')}_unparsed_{idx}.txt",data)
+    # Write the parsed data to file
+    # writeFile(&"/home/wrkn/GitRepos/HEPgpt/data-gathering/data/{request_url.replace('/','.')}_unparsed_{idx}.txt",data)
 
     return data
 
@@ -125,12 +121,16 @@ proc initialize_url_list*(): seq[string]=
     return urlList
 
 
+# proc config_
+
+
 if isMainModule:
 
     # Define consts and vars.
     # 20,000 and 10,000 means the requests will randomly vary in milliseconds between at least 20s and 20+10=30s
-    const minRandDelayInMilliseconds = 5000
-    const additionalDelayInMilliseconds = 10000
+    const 
+        minRandDelayInMilliseconds = 5000
+        additionalDelayInMilliseconds = 10000
     
     # For debugging.
     var randDelay: int
@@ -215,3 +215,13 @@ if isMainModule:
                 # os.sleep(rand(additionalDelayInMilliseconds) + minRandDelayInMilliseconds)
 
     echo "All procesing complete."
+
+    # TODO:
+        # 1. process forward and backlinks. If the url exists, then it shouldn't be readded to the list. only process once
+        # it could lead to duplicate entries
+        # 2. add real html parsing
+        # 3. slow down the loop iterator and make sure it is doing what i think its doing
+        # 4. try to get absolute url paths added so I can make sure the urls like /domains are not duplicates
+        # 5. implement a way to monitor/keep the crawler on a specific domain and not wander around the internet
+        # 6. look for and process robots.txt so when it moves around it doesn't cause a international incident
+        # 7. 
