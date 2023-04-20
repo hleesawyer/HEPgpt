@@ -40,16 +40,16 @@ proc parse_request*(data: string): seq[string] =
         echo getCurrentExceptionMsg()
 
     # Loop through the list of urls found from the a tags in the html document
-    # for idu, url in newUrlsList:
+    # for num_processed, url in newUrlsList:
 
         # If its thefirst line, add the url
-        # if idu == 0:
+        # if num_processed == 0:
             # new_urls_string.add(url)
             # If the first line is also the last line, dont add a newline
-            # if idu != len(newUrlsList)-1:
+            # if num_processed != len(newUrlsList)-1:
                 # new_urls_string.add("\n")
         # If instead, the current url is the last url, add the url but not a new line
-        # elif idu == len(newUrlsList)-1:
+        # elif num_processed == len(newUrlsList)-1:
             # new_urls_string.add(url)
         # It isn't the first or last line, add a new line, then add the url
         # else:
@@ -134,42 +134,42 @@ if isMainModule:
     
     # For debugging.
     var randDelay: int
-
+    
     # Put some space between the compiler line and first output line.
     echo ""
-
+    
     # Initialize the first urlList
-    echo "initializing urlList:"
-    var urlList = initialize_url_list()    
+     echo "initializing urlList:"
+    var 
+        urlList = initialize_url_list()    
+        urls_remaining_it = len(urlList)
+        num_urls_to_add = 0
+        num_processed = 0
+
 
     # Loop through the urls and return the request in files based on the id of the url.
     # Also, implement a random request delay timer so we wait a minimum and max number of milliseconds between requests according to the robots.txt file (cern.astlas=20000ms min)
-    var 
-        url_iter = len(urlList)
-        num_urls_to_add = 0
-        idu = 0
-
-    while url_iter > 0:
+    while urls_remaining_it > 0:
         # Convert the ints to string
-        echo "url_iter:" &  $url_iter
-        echo "idu:" & $idu
+        echo "urls_remaining_it:" &  $urls_remaining_it
+        echo "num_processed:" & $num_processed
 
         # For each url we process, Initialize or re-Initialize the urlList
         echo "initializing urlList:"
         urlList = initialize_url_list()    
 
-        for idx, url in urlList:
+        for id_urlListInit, url in urlList:
             echo "url in for loop:" & url
-            echo "idx in for loop:" & $idx
+            echo "id_urlListInit in for loop:" & $id_urlListInit
             
 
-            # If the current url in the loop idx has not been seen in idu url iterations in the urllist(the last one we did)
+            # If the current url in the loop idx has not been seen in num_processed url iterations in the urllist(the last one we did)
             # then process the url.
-            if idu >= idx:
+            if num_processed >= id_urlListInit:
                 try:
                     echo "MAKING REQUEST..."
                     var
-                        data = return_request(url, idx)
+                        data = return_request(url, id_urlListInit)
                         parsed_data = parse_request(data)
                     echo "REQUEST COMPLETE."
                     try:
@@ -178,8 +178,8 @@ if isMainModule:
                         num_urls_to_add = record_urls(parsed_data)
                         echo "recorded"
                         # Add that number of iterations to our main loop
-                        url_iter += num_urls_to_add
-                        echo "url_iter updated:" & $url_iter
+                        urls_remaining_it += num_urls_to_add
+                        echo "urls_remaining_it updated:" & $urls_remaining_it
                     except Exception:
                         echo "failed to record_urls"
                         echo getCurrentExceptionMsg()
@@ -195,13 +195,13 @@ if isMainModule:
                 # echo getCurrentExceptionMsg()
 
             echo &"Request {idx} completed.\n"
-            # One url is processed, update url_iter
+            # One url is processed, update urls_remaining_it
             
-            url_iter -= 1
-            echo "url_iter: reduced:" & $url_iter
+            urls_remaining_it -= 1
+            echo "urls_remaining_it: reduced:" & $urls_remaining_it
             # At the same time, update the number of urls we have processed so we know where to skip in urlList
-            idu += 1
-            echo "idu updated:" & $idu
+            num_processed += 1
+            echo "num_processed updated:" & $num_processed
             
             # Do not execute sleep on the final iteration.
             echo "setting delay"
