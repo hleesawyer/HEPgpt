@@ -7,6 +7,7 @@ import sequtils
 import std/os
 import std/random
 import std/uri
+import std/sets
 
 # import std/rdstdin
 
@@ -93,6 +94,7 @@ proc return_request*(request_url: string, idx: int, to_process: var int): (strin
     var data = d.body()
         # Get the urls from urlFile
     var lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
+    lines = toSeq(toOrderedSet(lines))
 
     # Delete the line we just processed from urlList
     echo "delete lines"
@@ -139,11 +141,19 @@ proc remove_url(to_process: var int, idu: int): int =
     return to_process
 
 
-proc record_urls*(newUrlsList: seq, oldUrls: seq, leading_url_info: string, to_process: var int): (int, int) =
+# proc record_urls*(newUrlsList: seq, oldUrls: seq, leading_url_info: string, to_process: var int): (int, int) =
+proc record_urls*(newUrlsList: seq, leading_url_info: string, to_process: var int): (int, int) =    
 
     var num_urls_to_add = 0
     echo "LEADING URL INFO:"
     echo leading_url_info
+
+    var lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
+    lines = toSeq(toOrderedSet(lines))
+
+    var linesAll = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlsAll.txt".readFile().splitLines(keepEol = true)
+    linesAll = toSeq(toOrderedSet(lines))
+
     try:
         # If the file exists
         # let f = open(&"/home/wrkn/GitRepos/HEPgpt/data-gathering/data/{request_url.replace('/','.')}_unparsed_{idx}.txt", fmAppend)
@@ -154,29 +164,33 @@ proc record_urls*(newUrlsList: seq, oldUrls: seq, leading_url_info: string, to_p
         # Loop through the discovered urls and record them in the urlFile
 
         # echo newUrlsList
-        for url in newUrlsList:
+        for url in toSeq(toOrderedSet(newUrlsList)):
 
-            if url in oldUrls:
-                # If the new Url is in the oldUrls, skip it
+            # Don't add new urls 'url' if it already exists in urlFile.txt
+            echo "leadingurlinfo:"
+            echo leading_url_info
+            echo "url:"
+            echo url
+            if leading_url_info & url & "\n" in lines or leading_url_info & url & "/" & "\n" in lines or leading_url_info == url or leading_url_info&"/" == url:
+                continue
+
+            # 4-31-23: Now we need to check to see if the url already exists in urlsAll.txt and skip it
+            # TEST THIS ...also this line exists and untsted in the EXCEPT part
+            if leading_url_info & url & "\n" in linesAll or leading_url_info & url & "/" & "\n" in linesAll:
                 continue
 
             if url == "/":
                 # If the entire new url is '/'
                 continue
-
-            # if leading_url_info notin url:
-                # If the url already exists or was previously found in urlsAll.txt
-                # if leading_url_info&"/" in rlines or leading_url_info in rlines:
-                    # continue
-
-            # echo "writing " & url
+            
             if leading_url_info != "" and leading_url_info notin url and "http" notin url:
-                # echo "adding leadingurlinfo"
+                echo "adding:"
+                echo leading_url_info & url & "\n"
                 f.write(leading_url_info & url & "\n")
                 # f_all.write(leading_url_info & url & "\n")
                 to_process += 1
             else:
-                # echo "regular url added"
+                echo "regular url added"
                 f.write(url & "\n")
                 # f_all.write(url & "\n")
                 to_process += 1
@@ -189,32 +203,31 @@ proc record_urls*(newUrlsList: seq, oldUrls: seq, leading_url_info: string, to_p
 
         # Loop through the discovered urls and record them in the urlFile
         for url in newUrlsList:
+            # Don't add new urls 'url' if it already exists in urlFile.txt
+            echo "leadingurlinfo:"
+            echo leading_url_info
+            echo "url:"
+            echo url
+            if leading_url_info & url & "\n" in lines or leading_url_info & url & "/" & "\n" in lines or leading_url_info == url or leading_url_info&"/" == url:
+                continue
 
-            if url in oldUrls:
-                # If the new Url is in the oldUrls, skip it
+            # 4-31-23: Now we need to check to see if the url already exists in urlsAll.txt and skip it
+            # TEST THIS ...also this line exists and untsted in the TRY part
+            if leading_url_info & url & "\n" in linesAll or leading_url_info & url & "/" & "\n" in linesAll:
                 continue
 
             if url == "/":
                 # If the entire new url is '/'
                 continue
 
-            # if url in rlines:
-                # If the new url we are adding is already in the urlsAll.txt file, skip it
-                # continue
-
-            # if leading_url_info notin url:
-                # If the url already exists or was previously found in urlsAll.txt
-                # if leading_url_info&"/" in rlines or leading_url_info in rlines:
-                    # continue
-
-            # echo "writing " & url & " appended files"
             if leading_url_info != "" and leading_url_info notin url:
-                # echo "adding leadingurlinfo"
+                echo "adding:"
+                echo leading_url_info & url & "\n"
                 f.write(leading_url_info & url & "\n")
                 # f_all.write(leading_url_info & url & "\n")
                 to_process += 1
             else:
-                # echo "regular url added"
+                echo "regular url added"
                 f.write(url & "\n")
                 # f_all.write(url & "\n")
                 to_process += 1
@@ -224,11 +237,26 @@ proc record_urls*(newUrlsList: seq, oldUrls: seq, leading_url_info: string, to_p
     return (num_urls_to_add, to_process)
 
 
+proc remove_duplicate_urls*() =
+    # Go back later and remove all the code that this little bit was intended to do
+    
+    var lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
+    lines = toSeq(toOrderedSet(lines))
+
+    let f = open("/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt", fmWrite)
+    defer: f.close()
+
+    f.write(lines)
+
 proc init_urls*(): seq[string]= 
+
+    remove_duplicate_urls()
 
     var urls = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
     # echo urls
     return urls
+
+
 
 
 if isMainModule:
@@ -258,6 +286,7 @@ if isMainModule:
         res: Uri
         leading_url_info: string
         lines: seq[string] = @[]
+        urlFileSeq: seq[string] = @[]
     
     # echo urls
 
@@ -297,11 +326,15 @@ if isMainModule:
 
             # 4-20-23 : THE CURRENT PROBLEM IS THAT  "example.com" is in "example.com/domains"
             # BUT we still need to process "example.com/domains" and skip all instances of "example.com" exactly
-            if url notin toSeq(lines)[idu+1..^1]:
+
+
+            if url != "":
                 echo "--------------------------------------------------URL notin lines!"
                 (data, to_process) = return_request(url, idu, to_process)
                 # urlsAll.txt is updated in return_request(), so update lines to reflext the update
                 lines = init_urls()
+                echo "lines redefined"
+                echo lines
             else:
                 echo "URL in lines!!!------------"
                 echo "URL:"
@@ -309,7 +342,7 @@ if isMainModule:
                 if url=="\n":
                     echo "slashN"
                 echo idu
-                os.sleep(100)
+                os.sleep(1000)
                 to_process = remove_url(to_process, idu)
                 continue
 
@@ -323,7 +356,8 @@ if isMainModule:
             
             echo "to_process2:"
             echo to_process
-            (num_urls_to_add, to_process) = record_urls(newUrlList, tmp, leading_url_info, to_process)
+            # (num_urls_to_add, to_process) = record_urls(newUrlList, tmp, leading_url_info, to_process)
+            (num_urls_to_add, to_process) = record_urls(newUrlList, leading_url_info, to_process)
             echo to_process
 
             urls = init_urls()
