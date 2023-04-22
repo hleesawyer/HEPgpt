@@ -141,98 +141,107 @@ proc remove_url(to_process: var int, idu: int): int =
     return to_process
 
 
-# proc record_urls*(newUrlsList: seq, oldUrls: seq, leading_url_info: string, to_process: var int): (int, int) =
+proc record_urls_main*(f: File, newUrlsList: seq, leading_url_info: string, lines: seq, linesAll: seq, to_process: var int, num_urls_to_add: var int): (int, int) =
+
+    # Loop through the discovered urls and record them in the urlFile
+    for url in newUrlsList:
+        # Don't add new urls 'url' if it already exists in urlFile.txt
+        echo "leadingurlinfo:"
+        echo leading_url_info
+        echo "url:"
+        echo url
+
+        if leading_url_info & url & "\n" in lines:
+            # http://www.iana.orghttp://pti.icann.org\n
+            continue
+
+        if leading_url_info & url & "/" & "\n" in lines:
+            # http://www.iana.orghttp://pti.icann.org/\n
+            continue
+
+        if leading_url_info == url:
+            ## http://www.iana.org == http://pti.icann.org
+            continue
+
+        if leading_url_info&"/" == url:
+            # http://www.iana.org/
+            continue
+
+        try:
+            # if $toSeq(url)[^1] == url:
+                # http://www.iana.orghttp://pti.icann.org\n
+                # continue
+            if url & "/" in lines or $toSeq(url)[0..^2] in lines:
+                continue
+        except:
+            discard
+        
+        if leading_url_info & url & "\n" in linesAll:
+            # http://www.iana.orghttp://pti.icann.org\n
+            continue
+
+        if leading_url_info & url & "/" & "\n" in linesAll:
+            # http://www.iana.orghttp://pti.icann.org/\n
+            continue
+
+        if url == "/":
+            # If the entire new url is '/'
+            # http://pti.icann.org
+            continue
+            
+        # If leading_url_info not empty, if it isnt in the url, and if http not in the url
+        if leading_url_info != "" and leading_url_info notin url and "http" notin url:
+            # http://www.iana.org and http://www.iana.org notin http://pti.icann.org and http notin # http://pti.icann.org
+            echo "adding2:"
+            echo leading_url_info & url & "\n"
+
+            try:
+                if "/" != $toSeq(url)[0]:
+                    f.write(leading_url_info & "/" & url & "\n")
+                else:
+                    f.write(leading_url_info & url & "\n")
+            except:
+                discard
+
+            to_process += 1
+        else:
+            # http://pti.icann.org
+            # https://www.iana.org != "", https://www.iana.org notin url, but http in url
+            echo "regular url added2"
+
+            f.write(url & "\n")
+            
+            to_process += 1
+
+        num_urls_to_add += 1
+
+    return (num_urls_to_add, to_process)
+
+
 proc record_urls*(newUrlsList: seq, leading_url_info: string, to_process: var int): (int, int) =    
 
-    var num_urls_to_add = 0
+    var 
+        num_urls_to_add = 0
+        lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
+        linesAll = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlsAll.txt".readFile().splitLines(keepEol = true)
+
+    lines = toSeq(toOrderedSet(lines))
+    linesAll = toSeq(toOrderedSet(lines))
+    
     echo "LEADING URL INFO:"
     echo leading_url_info
 
-    var lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
-    lines = toSeq(toOrderedSet(lines))
-
-    var linesAll = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlsAll.txt".readFile().splitLines(keepEol = true)
-    linesAll = toSeq(toOrderedSet(lines))
-
     try:
         # If the file exists
-        # let f = open(&"/home/wrkn/GitRepos/HEPgpt/data-gathering/data/{request_url.replace('/','.')}_unparsed_{idx}.txt", fmAppend)
-        
         let f = open("/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt", fmAppend)
-        defer: f.close()
-
-        # Loop through the discovered urls and record them in the urlFile
-
-        # echo newUrlsList
-        for url in toSeq(toOrderedSet(newUrlsList)):
-
-            # Don't add new urls 'url' if it already exists in urlFile.txt
-            echo "leadingurlinfo:"
-            echo leading_url_info
-            echo "url:"
-            echo url
-            if leading_url_info & url & "\n" in lines or leading_url_info & url & "/" & "\n" in lines or leading_url_info == url or leading_url_info&"/" == url:
-                continue
-
-            # 4-31-23: Now we need to check to see if the url already exists in urlsAll.txt and skip it
-            # TEST THIS ...also this line exists and untsted in the EXCEPT part
-            if leading_url_info & url & "\n" in linesAll or leading_url_info & url & "/" & "\n" in linesAll:
-                continue
-
-            if url == "/":
-                # If the entire new url is '/'
-                continue
-            
-            if leading_url_info != "" and leading_url_info notin url and "http" notin url:
-                echo "adding:"
-                echo leading_url_info & url & "\n"
-                f.write(leading_url_info & url & "\n")
-                # f_all.write(leading_url_info & url & "\n")
-                to_process += 1
-            else:
-                echo "regular url added"
-                f.write(url & "\n")
-                # f_all.write(url & "\n")
-                to_process += 1
-
-            num_urls_to_add += 1
-
+        (num_urls_to_add, to_process) = record_urls_main(f, newUrlsList, leading_url_info, lines, linesAll, to_process, num_urls_to_add)
+        f.close()
     except Exception:
+        # If it does not exist
         let f = open("/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt", fmWrite)
-        defer: f.close()
+        (num_urls_to_add, to_process) = record_urls_main(f, newUrlsList, leading_url_info, lines, linesAll, to_process, num_urls_to_add)
+        f.close()
 
-        # Loop through the discovered urls and record them in the urlFile
-        for url in newUrlsList:
-            # Don't add new urls 'url' if it already exists in urlFile.txt
-            echo "leadingurlinfo:"
-            echo leading_url_info
-            echo "url:"
-            echo url
-            if leading_url_info & url & "\n" in lines or leading_url_info & url & "/" & "\n" in lines or leading_url_info == url or leading_url_info&"/" == url:
-                continue
-
-            # 4-31-23: Now we need to check to see if the url already exists in urlsAll.txt and skip it
-            # TEST THIS ...also this line exists and untsted in the TRY part
-            if leading_url_info & url & "\n" in linesAll or leading_url_info & url & "/" & "\n" in linesAll:
-                continue
-
-            if url == "/":
-                # If the entire new url is '/'
-                continue
-
-            if leading_url_info != "" and leading_url_info notin url:
-                echo "adding:"
-                echo leading_url_info & url & "\n"
-                f.write(leading_url_info & url & "\n")
-                # f_all.write(leading_url_info & url & "\n")
-                to_process += 1
-            else:
-                echo "regular url added"
-                f.write(url & "\n")
-                # f_all.write(url & "\n")
-                to_process += 1
-
-            num_urls_to_add += 1
 
     return (num_urls_to_add, to_process)
 
@@ -247,6 +256,7 @@ proc remove_duplicate_urls*() =
     defer: f.close()
 
     f.write(lines)
+
 
 proc init_urls*(): seq[string]= 
 
