@@ -12,7 +12,7 @@ import std/sets
 
 
 
-# TODO: 
+# TODO #
         # 1. add real html parsing
         # 2. slow down the loop iterator and make sure it is doing what i think its doing
         # 3. implement a way to monitor/keep the crawler on a specific domain and not wander around the internet (atlas)
