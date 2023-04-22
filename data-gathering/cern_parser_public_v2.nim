@@ -70,6 +70,7 @@ proc return_request*(request_url: string, idx: int, to_process: var int): (strin
     # runnableExamples:
         # my_request = "http://export.arxiv.org/api/query?search_query=all:electron&start=0&max_results=10"
         # echo return_request(my_request)
+
     var fixed_request = ""
 
     echo request_url
@@ -89,18 +90,17 @@ proc return_request*(request_url: string, idx: int, to_process: var int): (strin
         # Add the request here in this line
     echo "client created"
     var d = client.request(fixed_request)
-    # var d = client.request(request_url)
     echo "requested"
+
     var data = d.body()
-        # Get the urls from urlFile
+
+    # Get the urls from urlFile
     var lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
     lines = toSeq(toOrderedSet(lines))
 
     # Delete the line we just processed from urlList
     echo "delete lines"
-    # echo lines
     lines.delete(idx)
-    # echo lines
     echo "deleted"
     to_process = to_process - 1
 
@@ -122,12 +122,11 @@ proc return_request*(request_url: string, idx: int, to_process: var int): (strin
 
 
 proc remove_url(to_process: var int, idu: int): int =
+
     var lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
     
     echo "delete lines"
-    # echo lines
     lines.delete(idu)
-    # echo lines
     echo "deleted"
     to_process = to_process - 1
     
@@ -151,6 +150,10 @@ proc record_urls_main*(f: File, newUrlsList: seq, leading_url_info: string, line
         echo "url:"
         echo url
 
+        ###################
+        # SKIP CONDITIONS #
+        ###################
+
         if leading_url_info & url & "\n" in lines:
             # http://www.iana.orghttp://pti.icann.org\n
             continue
@@ -167,14 +170,11 @@ proc record_urls_main*(f: File, newUrlsList: seq, leading_url_info: string, line
             # http://www.iana.org/
             continue
 
-        try:
-            # if $toSeq(url)[^1] == url:
-                # http://www.iana.orghttp://pti.icann.org\n
-                # continue
-            if url & "/" in lines or $toSeq(url)[0..^2] in lines:
+        try: # If something happens where we can't process these lines, skip it
+            if url & "/" & "\n" in lines or $url[0..^2] & "\n" in lines:
                 continue
         except:
-            discard
+           echo "condition error"
         
         if leading_url_info & url & "\n" in linesAll:
             # http://www.iana.orghttp://pti.icann.org\n
@@ -192,7 +192,7 @@ proc record_urls_main*(f: File, newUrlsList: seq, leading_url_info: string, line
         # If leading_url_info not empty, if it isnt in the url, and if http not in the url
         if leading_url_info != "" and leading_url_info notin url and "http" notin url:
             # http://www.iana.org and http://www.iana.org notin http://pti.icann.org and http notin # http://pti.icann.org
-            echo "adding2:"
+            echo "adding:"
             echo leading_url_info & url & "\n"
 
             try:
@@ -207,7 +207,7 @@ proc record_urls_main*(f: File, newUrlsList: seq, leading_url_info: string, line
         else:
             # http://pti.icann.org
             # https://www.iana.org != "", https://www.iana.org notin url, but http in url
-            echo "regular url added2"
+            echo "regular url added"
 
             f.write(url & "\n")
             
@@ -225,9 +225,7 @@ proc record_urls*(newUrlsList: seq, leading_url_info: string, to_process: var in
         lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
         linesAll = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlsAll.txt".readFile().splitLines(keepEol = true)
 
-    lines = toSeq(toOrderedSet(lines))
-    linesAll = toSeq(toOrderedSet(lines))
-    
+
     echo "LEADING URL INFO:"
     echo leading_url_info
 
@@ -263,7 +261,7 @@ proc init_urls*(): seq[string]=
     remove_duplicate_urls()
 
     var urls = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
-    # echo urls
+
     return urls
 
 
@@ -271,7 +269,10 @@ proc init_urls*(): seq[string]=
 
 if isMainModule:
 
-    # Define consts and vars.
+    ###################
+    # INITIALIZATIONS #
+    ###################
+
     # 20,000 and 10,000 means the requests will randomly vary in milliseconds between at least 20s and 20+10=30s
     const 
         minRandDelayInMilliseconds = 5000
@@ -286,35 +287,31 @@ if isMainModule:
     # Initialize the first urls
     echo "initializing urls:"
     var 
-        urls = init_urls()
-        tmp = urls
-        to_process = len(urls)
-        urls_remaining_it = len(urls)
-        num_urls_to_add = 0
-        data = ""
         newUrlList: seq[string] = @[]
+        lines: seq[string] = @[]
+        urls: seq[string] = init_urls()
+        to_process = len(urls)
+        data = ""
         res: Uri
         leading_url_info: string
-        lines: seq[string] = @[]
-        urlFileSeq: seq[string] = @[]
-    
-    # echo urls
+        num_urls_to_add: int
+        idu: int = 0
 
-# MAIN LOOP #
+
+    # MAIN LOOP THROUGH URLS TO PROCESS
     while to_process > 0:
 
-        echo "test3"
-        tmp = urls
-        lines = init_urls() # Unecessary
-        # echo lines
+        # Initializations in loop
+        urls = init_urls() # Unecessary
 
-        for idu, url in tmp:
+        
+        while idu <= len(urls)-1:
 
             # Try to get a new domain if one exists
             try:
-                echo "parsing Uri"
-                res = parseUri(url)
-                echo "parsed Uri"
+                # echo "parsing Uri"
+                res = parseUri(urls[idu])
+                # echo "parsed Uri"
                 leading_url_info = res.scheme & "://" & res.hostname
                 if leading_url_info == "://":
                     leading_url_info = ""
@@ -325,83 +322,74 @@ if isMainModule:
                 leading_url_info = ""
                 echo "leading url info empty"
 
-            echo "to_process:"
-            echo to_process
+            # echo "to_process:"
+            # echo to_process
             # Skip lines that have already been processed in urlsAll.txt
-            echo "URL:"
-            echo url
+            # echo "URL:"
+            # echo urls[idu]
             # echo "LINES:"
-            echo "idu:"
-            echo idu
+            # echo "idu:"
+            # echo idu
 
-            # 4-20-23 : THE CURRENT PROBLEM IS THAT  "example.com" is in "example.com/domains"
-            # BUT we still need to process "example.com/domains" and skip all instances of "example.com" exactly
+            ##############################################
+            # MAKE THE REQUEST UNDER THE RIGHT CODITIONS #
+            ##############################################
 
-
-            if url != "":
+            if urls[idu] != "":
                 echo "--------------------------------------------------URL notin lines!"
-                (data, to_process) = return_request(url, idu, to_process)
+                (data, to_process) = return_request(urls[idu], idu, to_process)
                 # urlsAll.txt is updated in return_request(), so update lines to reflext the update
                 lines = init_urls()
                 echo "lines redefined"
-                echo lines
+                # echo lines
             else:
                 echo "URL in lines!!!------------"
                 echo "URL:"
-                echo url
-                if url=="\n":
+                echo urls[idu]
+                if urls[idu]=="\n":
                     echo "slashN"
                 echo idu
                 os.sleep(1000)
                 to_process = remove_url(to_process, idu)
                 continue
 
-            echo to_process
+            # echo to_process
             if data == "":
                 continue
 
-            echo "test4"
+            #################
+            # PARSE REQUEST #
+            #################
+            # echo "test4"
             newUrlList = parse_request(data)
-            echo "test5"
+            # echo "test5"
             
-            echo "to_process2:"
-            echo to_process
+            ###############
+            # RECORD URLS #
+            ###############
+            # echo "to_process2:"
+            # echo to_process
             # (num_urls_to_add, to_process) = record_urls(newUrlList, tmp, leading_url_info, to_process)
             (num_urls_to_add, to_process) = record_urls(newUrlList, leading_url_info, to_process)
-            echo to_process
+            # echo to_process
 
+            ###################
+            # UPDATE ITERATORS #
+            ###################
             urls = init_urls()
             # to_process = len(urls)
             echo "to_process:" & $to_process
             echo "sleep 10s"
             os.sleep(10000)
-            echo "slept"
-        
+            # echo "slept"
 
-    # for idu, url in urls:
-        # if idu <= to_skip:
-            # continue
-        
-        # echo "test3"
-        # data = return_request(url, idu)
-        # echo "test4"
-        # newUrlList = parse_request(data)
-        # echo "test5"
-        # num_urls_to_add = record_urls(newUrlList)
-        # urls = init_urls()
-        # echo "sleep 5s"
-        # os.sleep(10000)
-        # echo "slept"
+            idu+=1
     
 
     echo "All procesing complete."
 
-    # TODO:
-        # 1. process forward and backlinks. If the url exists, then it shouldn't be readded to the list. only process once
-        # it could lead to duplicate entries
-        # 2. add real html parsing
-        # 3. slow down the loop iterator and make sure it is doing what i think its doing
-        # 4. try to get absolute url paths added so I can make sure the urls like /domains are not duplicates
-        # 5. implement a way to monitor/keep the crawler on a specific domain and not wander around the internet
-        # 6. look for and process robots.txt so when it moves around it doesn't cause a international incident
-        # 7. 
+    # TODO: 
+        # 1. add real html parsing
+        # 2. slow down the loop iterator and make sure it is doing what i think its doing
+        # 3. implement a way to monitor/keep the crawler on a specific domain and not wander around the internet (atlas)
+        # 4. look for and process robots.txt so when it moves around it doesn't cause a international incident 
