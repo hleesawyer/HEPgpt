@@ -13,6 +13,7 @@ import nimpy
 
 
 # TODO #
+    # NA. --test "Untested" code and use the processed rp = pr(leading_url_info) to update_parameters()
     # 1. Finish preparing the robots parser in the isMainModule area. All requests should be routed through this
     # crawl delay etc should be handled automatically
     # 2. add real html parsing
@@ -283,6 +284,51 @@ proc init_urls*(): seq[string]=
 
 
 
+proc pr(leading_url_info: string): PyObject =
+
+    # When we have the leading_url_info, this is where the robots.txt is stored, so process it
+    let sys = pyImport("sys")
+    discard sys.path.append(getCurrentDir())
+
+    # Make a nimpy import of the previously constructed roboparser_script that uses robotparser from urllib in python
+    let rps = pyImport("robotparser_script")
+
+    try: # Try to parse the robots.txt file
+
+        let rp = rps.parse_robots(leading_url_info & "/robots.txt")
+
+        try: # Try to open and store the file
+            # If the file exists
+            let f = open("/home/wrkn/GitRepos/HEPgpt/data-gathering/data/robotsList.txt", fmAppend)
+            f.write(leading_url_info & "/robots.txt" & "\n")
+            f.close()
+
+            echo "robots.txt content:"
+            echo rp
+
+            return rp
+
+            # process_and_return_rp_values()
+
+        except Exception:
+            # If it does not exist
+            let f = open("/home/wrkn/GitRepos/HEPgpt/data-gathering/data/robotsList.txt", fmWrite)
+            f.write(leading_url_info & "/robots.txt" & "\n")
+            f.close()
+
+            echo "robots.txt content:"
+            echo rp
+
+            # process_and_return_rp_values()
+            
+            return rp
+
+    except:
+        echo "No robots.txt at this domain or domain level."
+        return rps
+
+
+
 ################################################################################################################
 
 if isMainModule:
@@ -292,17 +338,17 @@ if isMainModule:
     ############################
 
     # Prpare the system for the location of the python script that will be imported
-    let sys = pyImport("sys")
-    discard sys.path.append(getCurrentDir())
+    # let sys = pyImport("sys")
+    # discard sys.path.append(getCurrentDir())
 
     # Make a nimpy import of the previously constructed roboparser_script that uses robotparser from urllib in python
-    let rps = pyImport("robotparser_script")
+    # let rps = pyImport("robotparser_script")
 
     # Get a handle for the robotparser itself after it parses the robots text file
-    let rp = rps.parse_robots("https://pti.icann.org/robots.txt")
+    # let rp = rps.parse_robots("https://pti.icann.org/robots.txt")
 
     # Report the results of the parsing (call functions as necessary)
-    echo s
+    # echo s
 
     # After looking at nimpy documentation, I can convert the PyObject to an int and use sit in nim this way:
     # echo to(rp.parse_robots("https://pti.icann.org"), int) == 10
@@ -318,6 +364,8 @@ if isMainModule:
         minRandDelayInMilliseconds = 5000
         additionalDelayInMilliseconds = 10000
     
+    let user_agent: string = "*" # Untested
+
     # For debugging.
     var randDelay: int
     
@@ -336,9 +384,12 @@ if isMainModule:
         leading_url_info: string
         num_urls_to_add: int
         idu: int = 0
+        rp: PyObject # Untested
 
+    #####################################
+    # MAIN LOOP THROUGH URLS TO PROCESS #
+    #####################################
 
-    # MAIN LOOP THROUGH URLS TO PROCESS
     while to_process > 0:
 
         # Initializations in loop
@@ -347,6 +398,9 @@ if isMainModule:
         
         while idu <= len(urls)-1:
 
+            ###################
+            # Get Domain Info #
+            ###################
             # Try to get a new domain if one exists
             try:
                 # echo "parsing Uri"
@@ -361,6 +415,27 @@ if isMainModule:
             except:
                 leading_url_info = ""
                 echo "leading url info empty"
+
+
+            ######################
+            # Process Robots.txt #
+            ######################
+            # Try to process robots.txt for this domain
+            try:
+                # Get the  lines from robotsList.txt and determine if we have already seen and processed it
+                var robo_lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/robotsList.txt".readFile().splitLines(keepEol = true)
+                if leading_url_info & "/robots.txt" & "\n" in robo_lines or leading_url_info & "/robots.txt" in robo_lines:
+                    echo "robots.txt already processed."
+                    discard # skip robots.txt thats already in the system
+                else:
+                    # We havn't processed this robots.txt, process it
+                    echo "Processing new robots.txt"
+                    discard pr(leading_url_info) # returns either rp which contains parsed robots.txt or the rps module from script
+                    rp = pr(leading_url_info) # Untested
+
+                    # update_parameters()
+            except:
+                echo "failed to process"
 
             # echo "to_process:"
             # echo to_process
@@ -377,7 +452,14 @@ if isMainModule:
 
             if urls[idu] != "":
                 echo "--------------------------------------------------URL notin lines!"
-                (data, to_process) = return_request(urls[idu], idu, to_process)
+                
+                # Untested
+                # If the robots.txt allows us to request this url, request it, else avoid it
+                if rp.can_fetch(user_agent, urls[idu]):
+                    (data, to_process) = return_request(urls[idu], idu, to_process)
+                else:
+                    continue
+
                 # urlsAll.txt is updated in return_request(), so update lines to reflext the update
                 lines = init_urls()
                 echo "lines redefined"
@@ -421,6 +503,11 @@ if isMainModule:
             echo "to_process:" & $to_process
             echo "sleep 10s"
             os.sleep(10000)
+            # Untested
+            # try:
+                # os.sleep(rp.crawl_delay(user_agent)) # Untested
+            # except:
+                # os.sleep(20000)
             # echo "slept"
 
             idu+=1
