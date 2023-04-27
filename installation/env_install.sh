@@ -1,3 +1,11 @@
+echo "install nimpy for nim.."
+nimble install nimpy
+echo "nimpy complete."
+
+echo "robotparser for nim..."
+nimble install robotparser
+echo "robotparser complete."
+
 echo "mlflow start..."
 conda install -c conda-forge mlflow -y
 echo "mlflow complete."

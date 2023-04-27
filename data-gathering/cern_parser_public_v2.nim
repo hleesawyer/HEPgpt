@@ -8,17 +8,17 @@ import std/os
 import std/random
 import std/uri
 import std/sets
-
+import nimpy
 
 
 
 # TODO #
-        # 1. add real html parsing
-        # 2. slow down the loop iterator and make sure it is doing what i think its doing
-        # 3. implement a way to monitor/keep the crawler on a specific domain and not wander around the internet (atlas)
-        # 4. look for and process robots.txt so when it moves around it doesn't cause a international incident 
-
-
+    # 1. Finish preparing the robots parser in the isMainModule area. All requests should be routed through this
+    # crawl delay etc should be handled automatically
+    # 2. add real html parsing
+    # 2. slow down the loop iterator and make sure it is doing what i think its doing
+    # 3. implement a way to monitor/keep the crawler on a specific domain and not wander around the internet (atlas)
+    # 4. Consider the other crawler obfuscation techniques - proxy, user agents, etc.
 
 
 
@@ -33,6 +33,8 @@ import std/sets
 # echo waitFor asyncProc()
 
 ##############################
+
+
 
 proc parse_request*(data: string): seq[string] = 
 
@@ -131,6 +133,7 @@ proc return_request*(request_url: string, idx: int, to_process: var int): (strin
     return (data, to_process)
 
 
+
 proc remove_url(to_process: var int, idu: int): int =
 
     var lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/urlFile.txt".readFile().splitLines(keepEol = true)
@@ -148,6 +151,7 @@ proc remove_url(to_process: var int, idu: int): int =
     f.write("\n" & lines)
 
     return to_process
+
 
 
 proc record_urls_main*(f: File, newUrlsList: seq, leading_url_info: string, lines: seq, linesAll: seq, to_process: var int, num_urls_to_add: var int): (int, int) =
@@ -228,6 +232,7 @@ proc record_urls_main*(f: File, newUrlsList: seq, leading_url_info: string, line
     return (num_urls_to_add, to_process)
 
 
+
 proc record_urls*(newUrlsList: seq, leading_url_info: string, to_process: var int): (int, int) =    
 
     var 
@@ -254,6 +259,7 @@ proc record_urls*(newUrlsList: seq, leading_url_info: string, to_process: var in
     return (num_urls_to_add, to_process)
 
 
+
 proc remove_duplicate_urls*() =
     # Go back later and remove all the code that this little bit was intended to do
     
@@ -266,6 +272,7 @@ proc remove_duplicate_urls*() =
     f.write(lines)
 
 
+
 proc init_urls*(): seq[string]= 
 
     remove_duplicate_urls()
@@ -276,8 +283,31 @@ proc init_urls*(): seq[string]=
 
 
 
+################################################################################################################
 
 if isMainModule:
+
+    ############################
+    # PREPARE THE ROBOT PARSER #
+    ############################
+
+    # Prpare the system for the location of the python script that will be imported
+    let sys = pyImport("sys")
+    discard sys.path.append(getCurrentDir())
+
+    # Make a nimpy import of the previously constructed roboparser_script that uses robotparser from urllib in python
+    let rps = pyImport("robotparser_script")
+
+    # Get a handle for the robotparser itself after it parses the robots text file
+    let rp = rps.parse_robots("https://pti.icann.org/robots.txt")
+
+    # Report the results of the parsing (call functions as necessary)
+    echo s
+
+    # After looking at nimpy documentation, I can convert the PyObject to an int and use sit in nim this way:
+    # echo to(rp.parse_robots("https://pti.icann.org"), int) == 10
+
+
 
     ###################
     # INITIALIZATIONS #
