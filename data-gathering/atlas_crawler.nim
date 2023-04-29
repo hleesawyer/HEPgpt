@@ -11,6 +11,7 @@
 ## 1. Set domain_requirement (example: "twiki.cern.ch" to stay within domains that include that string)
 ## 2. Set isPublic to true for public domains, false for private domains for which you will need authentication
 
+
 import std/[strformat, htmlparser, xmltree, strutils, sequtils, os, random, uri, sets]
 import std/httpclient, base64
 import nimpy
