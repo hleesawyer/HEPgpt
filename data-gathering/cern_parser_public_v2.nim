@@ -13,14 +13,10 @@ import nimpy
 
 
 # TODO #
-    # NA. --test "Untested" code and use the processed rp = pr(leading_url_info) to update_parameters()
-     # https://docs.python.org/3/library/urllib.robotparser.html
-    # 1. Finish preparing the robots parser in the isMainModule area. All requests should be routed through this
-    # crawl delay etc should be handled automatically
-    # 2. add real html parsing
-    # 2. slow down the loop iterator and make sure it is doing what i think its doing
-    # 3. implement a way to monitor/keep the crawler on a specific domain and not wander around the internet (atlas)
+    
+    # 3. leading_url_info - implement a way to monitor/keep the crawler on a specific domain and not wander around the internet (atlas)
     # 4. Consider the other crawler obfuscation techniques - proxy, user agents, etc.
+    # 5. Consider fixing the BEWARE line from the robot parser later
 
 
 
@@ -38,14 +34,13 @@ import nimpy
 
 
 
-proc parse_request*(data: string): seq[string] = 
+proc parse_request*(data: string, urls: seq[string], idu: int): (seq[string], string) = 
 
     # Initialize variables
     var 
         html = parseHtml(data)
         newUrlsList: seq[string] = @[]
-        # new_urls_string = ""
-
+        b: XmlNode
     
     try:
         # Loop through the a tags found from the html document    
@@ -56,25 +51,20 @@ proc parse_request*(data: string): seq[string] =
         echo "FAILED 1"
         echo getCurrentExceptionMsg()
 
-    # Loop through the list of urls found from the a tags in the html document
-    # for num_processed, url in newUrlsList:
-
-        # If its thefirst line, add the url
-        # if num_processed == 0:
-            # new_urls_string.add(url)
-            # If the first line is also the last line, dont add a newline
-            # if num_processed != len(newUrlsList)-1:
-                # new_urls_string.add("\n")
-        # If instead, the current url is the last url, add the url but not a new line
-        # elif num_processed == len(newUrlsList)-1:
-            # new_urls_string.add(url)
-        # It isn't the first or last line, add a new line, then add the url
-        # else:
-            # new_urls_string.add("\n")
-            # new_urls_string.add(url)
+    try:
+        for b in html.findAll("body"):
+            # echo "BODY TAG"
+            # parsed_data = $b
+            try:
+                # Try to record the parsed data
+                writeFile(&"/home/wrkn/GitRepos/HEPgpt/data-gathering/data/{urls[idu].replace('/','.')}_parsed.txt", $b)
+            except:
+                echo "failed to record parsed_data"
+                echo getCurrentExceptionMsg()
+    except:
+        echo "CANT GET BODY TAG"
             
-    return newUrlsList
-    # return new_urls_string
+    return (newUrlsList, $b)
     
 
 
@@ -367,7 +357,7 @@ if isMainModule:
         default_min_delay = 10000
     
     let 
-        user_agent: string = "*" # Untested
+        user_agent: string = "*"
         py = pyBuiltIns()
 
     # For debugging.
@@ -388,7 +378,8 @@ if isMainModule:
         leading_url_info: string
         num_urls_to_add: int
         idu: int = 0
-        rp: PyObject = nil # Untested
+        rp: PyObject
+        parsed_data: string
 
     #####################################
     # MAIN LOOP THROUGH URLS TO PROCESS #
@@ -450,7 +441,7 @@ if isMainModule:
                     # We havn't processed this robots.txt, process it
                     echo "Processing new robots.txt"
                     # discard pr(leading_url_info) # returns either rp which contains parsed robots.txt or the rps module from script
-                    rp = pr(leading_url_info) # Untested
+                    rp = pr(leading_url_info) 
 
                     # update_parameters()
             except:
@@ -511,7 +502,7 @@ if isMainModule:
             # PARSE REQUEST #
             #################
             # echo "test4"
-            newUrlList = parse_request(data)
+            (newUrlList, parsed_data) = parse_request(data, urls, idu)
             # echo "test5"
             
             ###############
@@ -529,11 +520,10 @@ if isMainModule:
             urls = init_urls()
             # to_process = len(urls)
             echo "to_process:" & $to_process
-            echo "sleep 10s"
-            # os.sleep(10000)
-            # Untested
+            echo "sleep some seconds..."
+
+            # Try to get the crawl delay from robots.txt, otherwise set a minimum delay
             try:
-                
                 echo to(rp.crawl_delay(user_agent), int)
                 echo "crawl_delay found, sleeping..."
                 os.sleep(to(rp.crawl_delay(user_agent), int) * 1000) 
