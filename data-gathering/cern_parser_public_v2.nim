@@ -14,6 +14,7 @@ import nimpy
 
 # TODO #
     # NA. --test "Untested" code and use the processed rp = pr(leading_url_info) to update_parameters()
+     # https://docs.python.org/3/library/urllib.robotparser.html
     # 1. Finish preparing the robots parser in the isMainModule area. All requests should be routed through this
     # crawl delay etc should be handled automatically
     # 2. add real html parsing
@@ -363,11 +364,14 @@ if isMainModule:
     const 
         minRandDelayInMilliseconds = 5000
         additionalDelayInMilliseconds = 10000
+        default_min_delay = 10000
     
-    let user_agent: string = "*" # Untested
+    let 
+        user_agent: string = "*" # Untested
+        py = pyBuiltIns()
 
     # For debugging.
-    var randDelay: int
+    # var randDelay: int
     
     # Put some space between the compiler line and first output line.
     echo ""
@@ -384,7 +388,7 @@ if isMainModule:
         leading_url_info: string
         num_urls_to_add: int
         idu: int = 0
-        rp: PyObject # Untested
+        rp: PyObject = nil # Untested
 
     #####################################
     # MAIN LOOP THROUGH URLS TO PROCESS #
@@ -397,13 +401,21 @@ if isMainModule:
 
         
         while idu <= len(urls)-1:
+            # Skip blank entries in urlList
+            # echo "hello?" #...somethings wrong with this
+            if urls[idu] == "" or urls[idu] == "\n":
+                idu+=1
+                continue
 
             ###################
             # Get Domain Info #
             ###################
             # Try to get a new domain if one exists
+            
             try:
                 # echo "parsing Uri"
+                # echo "urls[idu]"
+                # echo urls[idu]
                 res = parseUri(urls[idu])
                 # echo "parsed Uri"
                 leading_url_info = res.scheme & "://" & res.hostname
@@ -411,6 +423,9 @@ if isMainModule:
                     leading_url_info = ""
 
                 echo "leading url info set:"
+                # echo res
+                # echo res.scheme
+                # echo res.hostname
                 echo leading_url_info
             except:
                 leading_url_info = ""
@@ -422,15 +437,19 @@ if isMainModule:
             ######################
             # Try to process robots.txt for this domain
             try:
-                # Get the  lines from robotsList.txt and determine if we have already seen and processed it
+                # Get the lines from robotsList.txt and determine if we have already seen and processed it
+                # (Untested-ish)Beware: If the robots.txt file is already processed on the very first iteration when running the crawler,
+                #  the program will reach an Exception "SIGSEGV illegal storage access" due to rp not existing when trying to run can_fetch
+                #  in the next block below. The program assumes that if rp has been processed, then we should be able to execute functions.
+                #  Also, I havn't found how to handle exceptions when rp is not initialized
                 var robo_lines = "/home/wrkn/GitRepos/HEPgpt/data-gathering/data/robotsList.txt".readFile().splitLines(keepEol = true)
                 if leading_url_info & "/robots.txt" & "\n" in robo_lines or leading_url_info & "/robots.txt" in robo_lines:
                     echo "robots.txt already processed."
-                    discard # skip robots.txt thats already in the system
+                    # discard # skip robots.txt thats already in the system
                 else:
                     # We havn't processed this robots.txt, process it
                     echo "Processing new robots.txt"
-                    discard pr(leading_url_info) # returns either rp which contains parsed robots.txt or the rps module from script
+                    # discard pr(leading_url_info) # returns either rp which contains parsed robots.txt or the rps module from script
                     rp = pr(leading_url_info) # Untested
 
                     # update_parameters()
@@ -453,12 +472,21 @@ if isMainModule:
             if urls[idu] != "":
                 echo "--------------------------------------------------URL notin lines!"
                 
-                # Untested
-                # If the robots.txt allows us to request this url, request it, else avoid it
-                if rp.can_fetch(user_agent, urls[idu]):
+                try:
+                    echo "wtf??"
+                    # If the robots.txt allows us to request this url, request it, else avoid it
+                    if to(rp.can_fetch(user_agent, urls[idu]), bool) == true:
+                        echo "can fetch, requesting url..."
+                        (data, to_process) = return_request(urls[idu], idu, to_process)
+                    else:
+                        echo "skipping - cannot fetch or error..."
+                        continue
+                    
+                    
+                except:
+                    echo getCurrentExceptionMsg()
+                    # If there was an error using rp, that means robots.txt doesn't exist or had an error, process request
                     (data, to_process) = return_request(urls[idu], idu, to_process)
-                else:
-                    continue
 
                 # urlsAll.txt is updated in return_request(), so update lines to reflext the update
                 lines = init_urls()
@@ -502,13 +530,16 @@ if isMainModule:
             # to_process = len(urls)
             echo "to_process:" & $to_process
             echo "sleep 10s"
-            os.sleep(10000)
+            # os.sleep(10000)
             # Untested
-            # try:
-                # os.sleep(rp.crawl_delay(user_agent)) # Untested
-            # except:
-                # os.sleep(20000)
-            # echo "slept"
+            try:
+                
+                echo to(rp.crawl_delay(user_agent), int)
+                echo "crawl_delay found, sleeping..."
+                os.sleep(to(rp.crawl_delay(user_agent), int) * 1000) 
+            except:
+                echo "no crawl delay found, default sleep executed"
+                os.sleep(default_min_delay)
 
             idu+=1
     
