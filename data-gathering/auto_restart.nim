@@ -1,28 +1,6 @@
-# # import system
-# import std/osproc
-# import posix
-
-# proc findProcessPid(name: string): (string, int) =
-  
-#   let (output, status) = execCmdEx("pgrep -x " & name)
-  
-#   if status != 0: # Not Success, print error
-#     # raise newException(ValueError, "Failed to run pgrep command: " & posix.strerror(cint(status)))
-#     echo posix.strerror(cint(status))
-  
-#   # if status == 0: # Success
-#     # Do something else
-  
-#   return (output, status)
-
-
-# if isMainModule:
-
-#     let pid = findProcessPid("hello")
-#     echo "Found process with PID ", pid
-
 import std/osproc
 import std/strutils
+
 
 
 proc clean_TZ*() =
@@ -55,6 +33,7 @@ proc clean_TZ*() =
 
 
   echo "Check complete - any T or Z state processes have been killed."
+
 
 
 proc start_crawler*() = 
@@ -90,6 +69,9 @@ proc start_crawler*() =
   if state != "R" and state != "S" and state != "D" and "color" notin cmd and "atlas_crawler" in cmd:
     # execCmd("nim c -r full/path/to/atlas_crawler.nim")
     discard execCmd("nim c -r ~/GitRepos/HEPgpt/data-gathering/atlas_crawler.nim")
+
+
+
 
 
 if isMainModule:
